@@ -3,441 +3,641 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAX Practice Hub</title>
-    
-    <!-- Tailwind CSS -->
+    <title>Power BI Exam Guide</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel for in-browser JSX compilation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- SheetJS for Excel Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-<body class="bg-slate-50 font-sans min-h-screen">
-    <div id="root"></div>
+<body class="bg-slate-50 font-sans text-slate-800 h-screen flex overflow-hidden">
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+    <!-- Mobile Header -->
+    <div class="md:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center fixed top-0 w-full z-20 shadow-sm">
+        <div class="flex items-center space-x-2 text-blue-700 font-bold text-xl">
+            <i data-lucide="pie-chart" class="w-6 h-6"></i>
+            <span>BI Exam Guide</span>
+        </div>
+        <button onclick="toggleSidebar()" class="text-slate-600 focus:outline-none">
+            <i data-lucide="menu" id="menu-icon" class="w-6 h-6"></i>
+        </button>
+    </div>
 
-        // --- ICON COMPONENTS ---
-        const Database = ({ size = 24, className = "" }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
-        );
-        const Code2 = ({ size = 24, className = "" }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-        );
-        const CalendarClock = ({ size = 24, className = "" }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/></svg>
-        );
-        const ChevronDown = ({ size = 24, className = "" }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 12 15 18 9"/></svg>
-        );
-        const ChevronUp = ({ size = 24, className = "" }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="18 15 12 9 6 15"/></svg>
-        );
-        const Lightbulb = ({ size = 24, className = "" }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
-        );
-        const TableProperties = ({ size = 24, className = "" }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M21 9H3"/><path d="M21 15H3"/></svg>
-        );
-        const PlayCircle = ({ size = 24, className = "" }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-        );
-        const Download = ({ size = 24, className = "" }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-        );
-        const Info = ({ size = 24, className = "" }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-        );
+    <!-- Sidebar -->
+    <aside id="sidebar" class="-translate-x-full md:translate-x-0 fixed md:relative top-0 left-0 w-64 h-full bg-white border-r border-slate-200 shadow-sm transition-transform duration-300 ease-in-out z-30 flex flex-col pt-16 md:pt-0">
+        <div class="p-6 border-b border-slate-200 hidden md:flex items-center space-x-2 text-blue-700 font-bold text-2xl">
+            <i data-lucide="pie-chart" class="w-7 h-7"></i>
+            <span>BI Guide</span>
+        </div>
+        
+        <nav class="p-4 flex-1 space-y-2 overflow-y-auto">
+            <button onclick="switchTab('home')" id="btn-home" class="sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 bg-blue-600 text-white shadow-md">
+                <i data-lucide="home" class="w-5 h-5"></i>
+                <span class="font-semibold">Home & Datasets</span>
+            </button>
+            <div class="pt-4 pb-2">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-4 mb-2">Exam Sections</p>
+                <button onclick="switchTab('secA')" id="btn-secA" class="sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 text-slate-600 hover:bg-slate-100 hover:text-blue-600">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="font-semibold">Section A (12 Marks)</span>
+                </button>
+                <button onclick="switchTab('secB')" id="btn-secB" class="sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 text-slate-600 hover:bg-slate-100 hover:text-blue-600">
+                    <i data-lucide="table-2" class="w-5 h-5"></i>
+                    <span class="font-semibold">Section B (18 Marks)</span>
+                </button>
+                <button onclick="switchTab('secC')" id="btn-secC" class="sidebar-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 text-slate-600 hover:bg-slate-100 hover:text-blue-600">
+                    <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                    <span class="font-semibold">Section C (10 Marks)</span>
+                </button>
+            </div>
+        </nav>
 
-        // --- DATA: Sample Schema ---
-        const schemaData = {
-          Sales: [
-            { OrderID: '101', Date: '2023-01-15', ProductID: 'P1', Region: 'North', Quantity: 5, SalesAmount: 250 },
-            { OrderID: '102', Date: '2023-02-20', ProductID: 'P2', Region: 'South', Quantity: 2, SalesAmount: 800 },
-            { OrderID: '103', Date: '2023-03-10', ProductID: 'P1', Region: 'East', Quantity: 10, SalesAmount: 500 },
-            { OrderID: '104', Date: '2024-01-15', ProductID: 'P3', Region: 'North', Quantity: 1, SalesAmount: 1200 },
-            { OrderID: '105', Date: '2024-02-05', ProductID: 'P2', Region: 'West', Quantity: 3, SalesAmount: 1200 },
-            { OrderID: '106', Date: '2024-03-12', ProductID: 'P4', Region: 'South', Quantity: 5, SalesAmount: 150 },
-            { OrderID: '107', Date: '2024-04-01', ProductID: 'P1', Region: 'West', Quantity: 8, SalesAmount: 400 },
-            { OrderID: '108', Date: '2023-04-15', ProductID: 'P3', Region: 'East', Quantity: 2, SalesAmount: 2400 },
-            { OrderID: '109', Date: '2023-05-20', ProductID: 'P4', Region: 'North', Quantity: 10, SalesAmount: 1000 },
-            { OrderID: '110', Date: '2023-06-11', ProductID: 'P2', Region: 'West', Quantity: 1, SalesAmount: 250 },
-            { OrderID: '111', Date: '2023-07-05', ProductID: 'P1', Region: 'South', Quantity: 20, SalesAmount: 1000 },
-            { OrderID: '112', Date: '2023-08-22', ProductID: 'P3', Region: 'East', Quantity: 3, SalesAmount: 3600 },
-            { OrderID: '113', Date: '2023-09-14', ProductID: 'P4', Region: 'West', Quantity: 5, SalesAmount: 500 },
-            { OrderID: '114', Date: '2023-10-30', ProductID: 'P2', Region: 'North', Quantity: 4, SalesAmount: 1000 },
-            { OrderID: '115', Date: '2023-11-25', ProductID: 'P1', Region: 'East', Quantity: 15, SalesAmount: 750 },
-            { OrderID: '116', Date: '2023-12-10', ProductID: 'P3', Region: 'South', Quantity: 5, SalesAmount: 6000 },
-            { OrderID: '117', Date: '2023-12-28', ProductID: 'P4', Region: 'North', Quantity: 8, SalesAmount: 800 },
-            { OrderID: '118', Date: '2024-01-05', ProductID: 'P1', Region: 'West', Quantity: 10, SalesAmount: 500 },
-            { OrderID: '119', Date: '2024-02-14', ProductID: 'P2', Region: 'East', Quantity: 2, SalesAmount: 500 },
-            { OrderID: '120', Date: '2024-03-22', ProductID: 'P3', Region: 'North', Quantity: 1, SalesAmount: 1200 },
-            { OrderID: '121', Date: '2024-04-18', ProductID: 'P4', Region: 'South', Quantity: 12, SalesAmount: 1200 },
-            { OrderID: '122', Date: '2024-05-09', ProductID: 'P1', Region: 'East', Quantity: 6, SalesAmount: 300 },
-            { OrderID: '123', Date: '2024-06-17', ProductID: 'P2', Region: 'West', Quantity: 3, SalesAmount: 750 },
-            { OrderID: '124', Date: '2024-07-21', ProductID: 'P3', Region: 'South', Quantity: 2, SalesAmount: 2400 },
-            { OrderID: '125', Date: '2024-08-05', ProductID: 'P4', Region: 'East', Quantity: 4, SalesAmount: 400 },
-            { OrderID: '126', Date: '2024-09-11', ProductID: 'P1', Region: 'North', Quantity: 25, SalesAmount: 1250 },
-            { OrderID: '127', Date: '2024-10-02', ProductID: 'P2', Region: 'South', Quantity: 5, SalesAmount: 1250 },
-          ],
-          Products: [
-            { ProductID: 'P1', ProductName: 'Wireless Mouse', Category: 'Accessories', Cost: 20 },
-            { ProductID: 'P2', ProductName: 'Office Chair', Category: 'Furniture', Cost: 150 },
-            { ProductID: 'P3', ProductName: 'Laptop Pro', Category: 'Electronics', Cost: 800 },
-            { ProductID: 'P4', ProductName: 'Ergonomic Keyboard', Category: 'Accessories', Cost: 60 },
-          ]
-        };
+        <div class="p-4 border-t border-slate-200 mt-auto">
+            <div class="bg-blue-50 rounded-lg p-4">
+                <p class="text-xs text-blue-800 font-medium text-center">
+                    GL Bajaj PGDM Term-III<br>Sub Code: PG34
+                </p>
+            </div>
+        </div>
+    </aside>
 
-        // --- DATA: Practice Questions ---
-        const questions = [
-          // --- VALUE & FILTER DAX ---
-          {
-            id: 1,
-            category: 'Value',
-            title: '1. Count Transactions per Product',
-            tags: ['RELATEDTABLE', 'COUNTROWS'],
-            question: 'Write a calculated column in the Products table that counts how many times each product has been sold in the Sales table.',
-            dax: `TransactionCount = \nCOUNTROWS(\n    RELATEDTABLE(Sales)\n)`,
-            explanation: [
-                "<strong>RELATEDTABLE()</strong> acts as a bridge. Because there is a physical relationship between Products and Sales, it shifts the context from the current row in the Products table (Row Context) to all the matching rows in the Sales table.",
-                "<strong>COUNTROWS()</strong> then takes that filtered virtual table of matching sales records and simply counts the number of rows in it."
-            ]
-          },
-          {
-            id: 2,
-            category: 'Value',
-            title: '2. Total Sales for High-Value Items',
-            tags: ['CALCULATE', 'FILTER'],
-            question: 'Create a measure to calculate the total SalesAmount, but only for transactions where the SalesAmount is strictly greater than 500.',
-            dax: `HighValueSales = \nCALCULATE(\n    SUM(Sales[SalesAmount]),\n    FILTER(\n        Sales,\n        Sales[SalesAmount] > 500\n    )\n)`,
-            explanation: [
-                "<strong>FILTER()</strong> is an iterator function. It scans the entire <code>Sales</code> table row-by-row (Row Context), evaluates the <code>SalesAmount > 500</code> condition, and returns a new virtual table containing only the matching rows.",
-                "<strong>CALCULATE()</strong> is the context modifier. It takes the virtual table generated by FILTER and applies it as the new Filter Context.",
-                "Finally, <strong>SUM()</strong> calculates the total of <code>SalesAmount</code> using this newly restricted data."
-            ]
-          },
-          {
-            id: 3,
-            category: 'Value',
-            title: '3. ALL: Ignore Region Filters Completely',
-            tags: ['ALL', 'CALCULATE'],
-            question: 'Write a measure that calculates total sales for all regions combined, completely ignoring any filters applied to the Region column.',
-            dax: `Total_ALL_Regions = \nCALCULATE(\n    SUM(Sales[SalesAmount]),\n    ALL(Sales[Region])\n)`,
-            explanation: [
-                "<strong>ALL()</strong> acts as a filter 'destroyer'. By targeting <code>Sales[Region]</code>, it completely removes any filters currently applied to the Region column (e.g., from a slicer or a matrix row).",
-                "<strong>CALCULATE()</strong> applies this unrestricted context, meaning the measure will aggregate the <code>SUM</code> for every region combined, regardless of user selections."
-            ]
-          },
-          {
-            id: 4,
-            category: 'Value',
-            title: '4. ALLEXCEPT: Protect the Region Slicer',
-            tags: ['ALLEXCEPT', 'CALCULATE'],
-            question: 'Write a measure that calculates total sales by keeping the filter on the Region column but removing filters from all other columns in the Sales table.',
-            dax: `Total_Slicer_Region_Only = \nCALCULATE(\n    SUM(Sales[SalesAmount]),\n    ALLEXCEPT(Sales, Sales[Region])\n)`,
-            explanation: [
-                "<strong>ALLEXCEPT()</strong> acts as a filter 'protector'. It tells DAX to clear filters from every single column in the <code>Sales</code> table <em>except</em> for the <code>Region</code> column.",
-                "This means if a user filters by Date or Product, those filters are ignored, but if they filter by Region, that specific filter is respected during the <strong>CALCULATE()</strong> evaluation."
-            ]
-          },
-          {
-            id: 5,
-            category: 'Value',
-            title: '5. ALLSELECTED: Respect the Slicer, Ignore the Row',
-            tags: ['ALLSELECTED', 'CALCULATE'],
-            question: 'Write a measure that calculates total sales for the regions currently selected in an external slicer, ignoring any internal row filters applied by the visual itself.',
-            dax: `Total_Selected_Regions = \nCALCULATE(\n    SUM(Sales[SalesAmount]),\n    ALLSELECTED(Sales[Region])\n)`,
-            explanation: [
-                "<strong>ALLSELECTED()</strong> restores the filter context to reflect exactly what is explicitly chosen in external slicers or page filters.",
-                "It ignores internal visual filters. If a matrix has Region on the rows, ALLSELECTED ignores the individual row context (e.g., 'North') and evaluates the grand total of the selected slicer items."
-            ]
-          },
-          
-          // --- TIME INTELLIGENCE DAX ---
-          {
-            id: 6,
-            category: 'Time',
-            title: '6. First & Last Sale Dates for Products',
-            tags: ['FIRSTDATE', 'LASTDATE'],
-            question: 'Write two measures to find the date of the very first sale and the very last sale based on the fact table. Imagine you place these in a matrix visual with ProductName on the rows.',
-            dax: `FirstSaleDate = FIRSTDATE(Sales[Date])\n    \nLastSaleDate = LASTDATE(Sales[Date])`,
-            explanation: [
-                "<strong>FIRSTDATE()</strong> and <strong>LASTDATE()</strong> look at the <code>Sales[Date]</code> column within the current filter context (e.g., for a specific Product on a visual row).",
-                "Unlike MIN or MAX which return a single scalar value, these functions return a <em>table</em> containing a single column and a single row with the date. This structure allows them to be used seamlessly inside CALCULATE as filter arguments."
-            ]
-          },
-          {
-            id: 7,
-            category: 'Time',
-            title: '7. Start and End of Current Period',
-            tags: ['STARTOFMONTH', 'ENDOFYEAR'],
-            question: 'If a user is looking at the March 2024 sales, write measures to return the first day of that month and the last day of that year dynamically based on the Sales table.',
-            dax: `MonthStart = STARTOFMONTH(Sales[Date])\n\nYearEnd = ENDOFYEAR(Sales[Date])`,
-            explanation: [
-                "<strong>STARTOFMONTH()</strong> evaluates all the dates visible in <code>Sales[Date]</code> under the current filter context, identifies the month, and extracts the first date of that month.",
-                "<strong>ENDOFYEAR()</strong> similarly looks at the current context and extracts the absolute last date of the year. Both return a single-row table containing the respective date."
-            ]
-          }
-        ];
+    <!-- Overlay for mobile sidebar -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden"></div>
 
-        // --- COMPONENTS ---
-        const TabButton = ({ active, onClick, icon: Icon, text }) => (
-          <button
-            onClick={onClick}
-            className={`flex items-center space-x-2 px-6 py-3 font-medium transition-all duration-200 border-b-2 ${
-              active 
-                ? 'border-blue-600 text-blue-700 bg-blue-50/50' 
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <Icon size={18} />
-            <span>{text}</span>
-          </button>
-        );
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto w-full pt-16 md:pt-0">
+        <div class="p-6 md:p-10 max-w-5xl mx-auto">
+            
+            <!-- HOME TAB -->
+            <div id="tab-home" class="tab-content animate-fadeIn block">
+                <div class="bg-gradient-to-r from-blue-700 to-indigo-800 rounded-2xl p-8 text-white shadow-lg mb-8">
+                    <h1 class="text-4xl font-extrabold mb-4">Power BI Exam Companion</h1>
+                    <p class="text-blue-100 text-lg mb-6 max-w-2xl">
+                        Your complete guide to solving the PGDM (2024-25) End Term Examination for Power BI. Generate the required datasets below and follow the step-by-step guides for each section.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="switchTab('secA')" class="bg-white text-blue-800 font-bold py-2 px-6 rounded-lg shadow hover:bg-slate-100 transition">
+                            Start Guide
+                        </button>
+                    </div>
+                </div>
 
-        const SchemaViewer = () => {
-          const handleDownloadExcel = () => {
-            if (window.XLSX) {
-              const wb = window.XLSX.utils.book_new();
-              const salesSheet = window.XLSX.utils.json_to_sheet(schemaData.Sales);
-              const productsSheet = window.XLSX.utils.json_to_sheet(schemaData.Products);
-              
-              window.XLSX.utils.book_append_sheet(wb, salesSheet, "Sales");
-              window.XLSX.utils.book_append_sheet(wb, productsSheet, "Products");
-              
-              window.XLSX.writeFile(wb, "DAX_Practice_Dataset.xlsx");
-            } else {
-              alert("Excel library is not loaded. Please try again or refresh the page.");
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                    <i data-lucide="database" class="mr-2 text-blue-600 w-6 h-6"></i> Required Datasets
+                </h2>
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
+                        <div class="bg-green-100 text-green-600 p-4 rounded-full mb-4">
+                            <i data-lucide="table-2" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Sales Data</h3>
+                        <p class="text-sm text-slate-500 mb-4 flex-1">Mock dataset containing OrderID, Date, Region, Customer, ProductID, Sales, and Profit. (500 Records)</p>
+                        <button onclick="generateSalesData()" class="w-full flex justify-center items-center space-x-2 bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg transition">
+                            <i data-lucide="download" class="w-4 h-4"></i> <span>Download CSV</span>
+                        </button>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
+                        <div class="bg-blue-100 text-blue-600 p-4 rounded-full mb-4">
+                            <i data-lucide="table-2" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Product Data</h3>
+                        <p class="text-sm text-slate-500 mb-4 flex-1">Mock dataset mapping ProductID to ProductName and Category. (15 Records)</p>
+                        <button onclick="generateProductData()" class="w-full flex justify-center items-center space-x-2 bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg transition">
+                            <i data-lucide="download" class="w-4 h-4"></i> <span>Download CSV</span>
+                        </button>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
+                        <div class="bg-purple-100 text-purple-600 p-4 rounded-full mb-4">
+                            <i data-lucide="table-2" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Hospital Data</h3>
+                        <p class="text-sm text-slate-500 mb-4 flex-1">Mock dataset for Section C containing patient admissions, costs, and diagnosis. (500 Records)</p>
+                        <button onclick="generateHospitalData()" class="w-full flex justify-center items-center space-x-2 bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg transition">
+                            <i data-lucide="download" class="w-4 h-4"></i> <span>Download CSV</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-lg shadow-sm">
+                    <h3 class="font-bold text-amber-800 mb-2 flex items-center">
+                        <i data-lucide="check-circle-2" class="mr-2 w-5 h-5"></i> General Instructions Reminder
+                    </h3>
+                    <ul class="list-disc list-inside text-amber-900 space-y-2 text-sm">
+                        <li>Create a <strong>Cover Page</strong> with: Date of Exam, Room No., Name, Admission No., Section, Course.</li>
+                        <li>Use a <strong>separate Power BI Page</strong> for each question and name the page as the Question Number (e.g., "Q.1", "Q.2").</li>
+                        <li>Save file as: <code class="bg-amber-100 px-1 rounded">[ExamHallNo]_[AdmissionNo]_[FullName]_[Section].pbix</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SECTION A TAB -->
+            <div id="tab-secA" class="tab-content animate-fadeIn hidden">
+                <div class="mb-8 border-b border-slate-200 pb-4">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h1 class="text-3xl font-bold text-slate-800">Section A</h1>
+                            <p class="text-slate-500 mt-2">Import the given files 'Sales' and 'Product' in Power BI. Give all answers from Q.1(A) to Q.1(F) on one page named Q.1.</p>
+                        </div>
+                        <div class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-bold text-sm whitespace-nowrap">
+                            12 Marks
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q1A -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col mb-8">
+                    <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 1: (A)</span> Text Box & Total Sales by Region Chart</h3>
+                        <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L3</span>
+                    </div>
+                    <div class="p-6 flex-1 text-slate-700">
+                        <p class="mb-4"><strong>Goal:</strong> Add a text box stating "Answer 1" and create a formatted chart showing total sales by region.</p>
+                        <ol class="list-decimal list-inside space-y-2 ml-2">
+                            <li>Go to <strong>Insert &gt; Text box</strong> from the top ribbon. Type "Answer 1" and increase the font size.</li>
+                            <li>From the Visualizations pane, select <strong>Clustered Column Chart</strong> (or Donut Chart).</li>
+                            <li>Drag <strong>Region</strong> (from Sales table) into the <em>X-axis</em> (or Legend).</li>
+                            <li>Drag <strong>Sales</strong> (from Sales table) into the <em>Y-axis</em> (or Values).</li>
+                            <li><strong>Formatting:</strong> Go to the "Format your visual" tab (paint roller/brush icon). Turn on Data Labels, add a distinct Title, and round the corners in <em>General &gt; Effects &gt; Visual border</em>.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Q1B -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col mb-8">
+                    <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 1: (B)</span> Combo Chart & Slicer</h3>
+                        <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L3</span>
+                    </div>
+                    <div class="p-6 flex-1 text-slate-700">
+                        <p class="mb-4"><strong>Goal:</strong> Create a combo chart for sales and profit by customers, and use a slicer for region.</p>
+                        <ol class="list-decimal list-inside space-y-2 ml-2">
+                            <li>Select the <strong>Line and Stacked Column Chart</strong> icon from the Visualizations pane.</li>
+                            <li>Drag <strong>Customer</strong> to the <em>X-axis</em>.</li>
+                            <li>Drag <strong>Sales</strong> to the <em>Column y-axis</em>.</li>
+                            <li>Drag <strong>Profit</strong> to the <em>Line y-axis</em>.</li>
+                            <li>Click on a blank space on the canvas, then select the <strong>Slicer</strong> visual.</li>
+                            <li>Drag <strong>Region</strong> into the Slicer field. Change slicer settings to "Dropdown" or "Tile" for better formatting.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Q1C -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col mb-8">
+                    <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 1: (C)</span> DAX Measure for Row Count</h3>
+                        <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L3</span>
+                    </div>
+                    <div class="p-6 flex-1 text-slate-700">
+                        <p class="mb-4"><strong>Goal:</strong> Create a measure using DAX to count rows in 'Sales' and show it on a Card.</p>
+                        <ol class="list-decimal list-inside space-y-2 ml-2">
+                            <li>Right-click the <strong>Sales</strong> table in the Data pane and select <strong>New Measure</strong>.</li>
+                            <li>Type the following DAX formula in the formula bar:</li>
+                        </ol>
+                        <div class="relative mt-4 mb-4">
+                            <div class="absolute top-0 right-0 bg-slate-700 text-slate-300 text-xs px-2 py-1 rounded-bl-lg rounded-tr-md uppercase font-bold tracking-wider">DAX</div>
+                            <pre class="bg-slate-800 text-green-400 p-4 rounded-md overflow-x-auto text-sm font-mono shadow-inner"><code>Q1(C) = COUNTROWS('Sales')</code></pre>
+                        </div>
+                        <ol class="list-decimal list-inside space-y-2 ml-2" start="3">
+                            <li>Select the <strong>Card</strong> visual from the Visualizations pane.</li>
+                            <li>Drag your newly created measure <strong>Q1(C)</strong> into the Card's field.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Q1D -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col mb-8">
+                    <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 1: (D)</span> Area Chart for Monthly Trends</h3>
+                        <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L3</span>
+                    </div>
+                    <div class="p-6 flex-1 text-slate-700">
+                        <p class="mb-4"><strong>Goal:</strong> Area chart showing monthly sales trends with formatting.</p>
+                        <ol class="list-decimal list-inside space-y-2 ml-2">
+                            <li>Select the <strong>Area Chart</strong> visual.</li>
+                            <li>Drag <strong>Date</strong> to the <em>X-axis</em>. (Ensure it uses the Date Hierarchy, remove Day and Quarter to just show Year and Month).</li>
+                            <li>Drag <strong>Sales</strong> to the <em>Y-axis</em>.</li>
+                            <li><strong>Formatting:</strong> Go to Format visual &gt; Lines &gt; Colors. Change the fill opacity to make it look professional. Add markers if desired.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Q1E -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col mb-8">
+                    <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 1: (E)</span> Page Navigation Buttons</h3>
+                        <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L3</span>
+                    </div>
+                    <div class="p-6 flex-1 text-slate-700">
+                        <p class="mb-4"><strong>Goal:</strong> Create page navigation buttons for every question page.</p>
+                        <ol class="list-decimal list-inside space-y-2 ml-2">
+                            <li>Go to <strong>Insert &gt; Buttons &gt; Navigator &gt; Page Navigator</strong>.</li>
+                            <li>Power BI will automatically create a button for every page in your report.</li>
+                            <li>Go to <strong>Format &gt; Shape</strong> to change the button shapes (e.g., Pill or Rounded Rectangle). Customize the Fill colors for Default, Hover, and Selected states.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Q1F -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col mb-8">
+                    <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 1: (F)</span> Waterfall Chart for Profit</h3>
+                        <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L3</span>
+                    </div>
+                    <div class="p-6 flex-1 text-slate-700">
+                        <p class="mb-4"><strong>Goal:</strong> Waterfall chart showing profit contribution by product.</p>
+                        <ol class="list-decimal list-inside space-y-2 ml-2">
+                            <li>Select the <strong>Waterfall Chart</strong> visual.</li>
+                            <li>Drag <strong>ProductID</strong> (or ProductName if merged) to the <em>Category</em> field.</li>
+                            <li>Drag <strong>Profit</strong> to the <em>Y-axis</em>.</li>
+                            <li><strong>Formatting:</strong> Turn on Data Labels. Go to Format &gt; Columns and set distinct colors for Increases (Green) and Decreases (Red).</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION B TAB -->
+            <div id="tab-secB" class="tab-content animate-fadeIn hidden">
+                <div class="mb-8 border-b border-slate-200 pb-4">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h1 class="text-3xl font-bold text-slate-800">Section B</h1>
+                            <p class="text-slate-500 mt-2">Internal choices are provided. Solve either (A) or (B) for Questions 2, 3, and 4. Put each question on a separate page.</p>
+                        </div>
+                        <div class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-bold text-sm whitespace-nowrap">
+                            18 Marks
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="mb-10">
+                    <h2 class="text-xl font-extrabold text-slate-800 mb-4 border-l-4 border-blue-600 pl-3">Question 2 (Choose A or B)</h2>
+                    <div class="grid md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-6 items-stretch">
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                            <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                                <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 2: (A)</span> Matrix & Formatting</h3>
+                                <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L3</span>
+                            </div>
+                            <div class="p-6 flex-1 text-slate-700 text-sm">
+                                <ol class="list-decimal list-inside space-y-2 ml-1">
+                                    <li>Ensure a relationship exists between Sales and Product on <code>ProductID</code>.</li>
+                                    <li>Select the <strong>Matrix</strong> visual.</li>
+                                    <li>Rows: <strong>Category</strong> (from Product table).</li>
+                                    <li>Columns: <strong>Region</strong> (from Sales).</li>
+                                    <li>Values: <strong>Sales</strong>. Click the drop-down arrow on Sales in the Values well and select <strong>Average</strong>.</li>
+                                    <li><strong>Conditional Formatting:</strong> Right-click "Average of Sales", select <strong>Conditional formatting &gt; Background color</strong>. Choose gradient and click OK.</li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-center font-bold text-slate-400 py-4">OR</div>
+                        
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                            <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                                <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 2: (B)</span> Power Query: Group By</h3>
+                                <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L3</span>
+                            </div>
+                            <div class="p-6 flex-1 text-slate-700 text-sm">
+                                <ol class="list-decimal list-inside space-y-2 ml-1">
+                                    <li>Click <strong>Transform Data</strong> on the Home ribbon to open Power Query.</li>
+                                    <li>In Queries pane, right-click the <strong>Sales</strong> query and select <strong>Duplicate</strong>.</li>
+                                    <li>Rename query to <strong>Q2(B)</strong>.</li>
+                                    <li>Select the <strong>Customer</strong> column. Go to Home &gt; <strong>Group By</strong>.</li>
+                                    <li>New column: "Total Profit", Operation: <strong>Sum</strong>, Column: <strong>Profit</strong>.</li>
+                                    <li>Click <strong>Close & Apply</strong>.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="mb-10">
+                    <h2 class="text-xl font-extrabold text-slate-800 mb-4 border-l-4 border-blue-600 pl-3">Question 3 (Choose A or B)</h2>
+                    <div class="grid md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-6 items-stretch">
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                            <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                                <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 3: (A)</span> Drill Through Feature</h3>
+                                <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L4</span>
+                            </div>
+                            <div class="p-6 flex-1 text-slate-700 text-sm">
+                                <ol class="list-decimal list-inside space-y-2 ml-1">
+                                    <li><strong>Page 1 (Rename 'Q3(A)'):</strong> Create a <strong>Pie Chart</strong>. Legend: Region, Values: Sales.</li>
+                                    <li><strong>Page 2 (Rename 'Customer Details'):</strong> Create a <strong>Table</strong> visual adding Customer and Sales.</li>
+                                    <li>Stay on Page 2. In Visualizations pane, under "Drill through", drag <strong>Region</strong> into <em>Add drill-through fields here</em>.</li>
+                                    <li><strong>Test:</strong> Go back to Page 1, right-click a slice, select <strong>Drill through &gt; Customer Details</strong>.</li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-center font-bold text-slate-400 py-4">OR</div>
+                        
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                            <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                                <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 3: (B)</span> Merge & Custom Tooltip</h3>
+                                <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L4</span>
+                            </div>
+                            <div class="p-6 flex-1 text-slate-700 text-sm">
+                                <ol class="list-decimal list-inside space-y-2 ml-1">
+                                    <li>Open <strong>Transform Data</strong>. Go to Home &gt; Merge Queries as New.</li>
+                                    <li>Select Sales & Products on <code>ProductID</code>. Rename to <strong>Q3(B)</strong>. Expand columns. <strong>Close & Apply</strong>.</li>
+                                    <li><strong>Page 1:</strong> Bar chart (Sales by Product).</li>
+                                    <li><strong>Page 2:</strong> New page. Format Page &gt; Page Info &gt; Allow use as tooltip. Format Page &gt; Canvas Settings &gt; Type: Tooltip. Add small visuals.</li>
+                                    <li>Go to Page 1, select Bar chart. Format Visual &gt; General &gt; Tooltips &gt; Page: Select tooltip page.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="mb-10">
+                    <h2 class="text-xl font-extrabold text-slate-800 mb-4 border-l-4 border-blue-600 pl-3">Question 4 (Choose A or B)</h2>
+                    <div class="grid md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-6 items-stretch">
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                            <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                                <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 4: (A)</span> DAX: LOOKUPVALUE</h3>
+                                <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L4</span>
+                            </div>
+                            <div class="p-6 flex-1 text-slate-700 text-sm">
+                                <p class="mb-2"><strong>Goal:</strong> Fetch product category names into 'Sales'.</p>
+                                <ol class="list-decimal list-inside space-y-2 ml-1 mb-2">
+                                    <li>Go to <strong>Data View</strong>. Select <strong>Sales</strong> table.</li>
+                                    <li>Click <strong>New Column</strong>. Enter DAX:</li>
+                                </ol>
+                                <div class="relative mt-2">
+                                    <div class="absolute top-0 right-0 bg-slate-700 text-slate-300 text-xs px-2 py-1 rounded-bl-lg rounded-tr-md uppercase font-bold tracking-wider">DAX</div>
+                                    <pre class="bg-slate-800 text-green-400 p-4 rounded-md overflow-x-auto text-xs font-mono shadow-inner"><code>Q4(A) = LOOKUPVALUE('Product'[Category], 'Product'[ProductID], 'Sales'[ProductID])</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-center font-bold text-slate-400 py-4">OR</div>
+                        
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                            <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                                <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 4: (B)</span> DAX: IF Statement</h3>
+                                <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L4</span>
+                            </div>
+                            <div class="p-6 flex-1 text-slate-700 text-sm">
+                                <p class="mb-2"><strong>Goal:</strong> Label sales as 'High' if above 1000, else 'Low'.</p>
+                                <ol class="list-decimal list-inside space-y-2 ml-1 mb-2">
+                                    <li>Go to <strong>Data View</strong>. Select <strong>Sales</strong> table.</li>
+                                    <li>Click <strong>New Column</strong>. Enter DAX:</li>
+                                </ol>
+                                <div class="relative mt-2">
+                                    <div class="absolute top-0 right-0 bg-slate-700 text-slate-300 text-xs px-2 py-1 rounded-bl-lg rounded-tr-md uppercase font-bold tracking-wider">DAX</div>
+                                    <pre class="bg-slate-800 text-green-400 p-4 rounded-md overflow-x-auto text-xs font-mono shadow-inner"><code>Q4(B) = IF(Sales[Sales] > 1000, "High", "Low")</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION C TAB -->
+            <div id="tab-secC" class="tab-content animate-fadeIn hidden">
+                <div class="mb-8 border-b border-slate-200 pb-4">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h1 class="text-3xl font-bold text-slate-800">Section C</h1>
+                            <p class="text-slate-500 mt-2">Case Study: Hospital Patient Data Dashboard. The whole question 5 must be on one page named 'Q.5'.</p>
+                        </div>
+                        <div class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-bold text-sm whitespace-nowrap">
+                            10 Marks
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-6 mb-8 text-indigo-900">
+                    <h3 class="font-bold text-lg mb-2 flex items-center">
+                        <i data-lucide="file-text" class="mr-2 w-5 h-5"></i> Case Context
+                    </h3>
+                    <p class="text-sm">
+                        You are a data analyst at a multi-specialty hospital. Management wants to monitor patient treatment patterns and hospital performance. You must create an insightful and interactive Power BI dashboard on a <strong>single page</strong>.
+                    </p>
+                </div>
+
+                <!-- Q5A -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col mb-8">
+                    <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 5: (A)</span> DAX & Core Dashboard Cards</h3>
+                        <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L5</span>
+                    </div>
+                    <div class="p-6 flex-1 text-slate-700">
+                        <p class="mb-4"><strong>Goal:</strong> Create cards for Total Patients, Average Treatment Cost, and Average Length of Stay. Add slicers.</p>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4">
+                            <h4 class="font-bold text-slate-800 mb-2">Step 1: Calculate Length of Stay</h4>
+                            <p class="text-sm mb-2">First, you need a new column or measure to calculate the days between Admission and Discharge.</p>
+                            <p class="text-sm mb-2">Create a <strong>New Column</strong> in the Hospital table:</p>
+                            <div class="relative">
+                                <div class="absolute top-0 right-0 bg-slate-700 text-slate-300 text-xs px-2 py-1 rounded-bl-lg rounded-tr-md uppercase font-bold tracking-wider">DAX</div>
+                                <pre class="bg-slate-800 text-green-400 p-4 rounded-md overflow-x-auto text-sm font-mono shadow-inner"><code>Length of Stay = DATEDIFF('Hospital_Patient_Data'[Admission Date], 'Hospital_Patient_Data'[Discharge Date], DAY)</code></pre>
+                            </div>
+                        </div>
+                        
+                        <ol class="list-decimal list-inside space-y-2 ml-2">
+                            <li><strong>Card 1 (Total Patients):</strong> Select Card visual. Drag <code>PatientID</code> to fields. Change aggregation to <strong>Count (Distinct)</strong>.</li>
+                            <li><strong>Card 2 (Avg Treatment Cost):</strong> Select Card visual. Drag <code>Treatment Cost</code>. Change aggregation to <strong>Average</strong>. Format as Currency.</li>
+                            <li><strong>Card 3 (Avg Length of Stay):</strong> Select Card visual. Drag the new <code>Length of Stay</code> column. Change aggregation to <strong>Average</strong>.</li>
+                            <li><strong>Slicers:</strong> Add 2-3 slicers at the top or side of your page. Good candidates are <code>Diagnosis</code>, <code>Gender</code>, or a Date Slicer using <code>Admission Date</code>.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Q5B -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col mb-8">
+                    <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-slate-800"><span class="text-blue-600 mr-2">Q. 5: (B)</span> Insightful Visualizations</h3>
+                        <span class="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded">Bloom: L5</span>
+                    </div>
+                    <div class="p-6 flex-1 text-slate-700">
+                        <p class="mb-2"><strong>Goal:</strong> Create 5-6 visualizations to get the best insights out of data.</p>
+                        <p class="text-sm italic mb-4">Arrange these neatly on the same page as 5(A) to form a cohesive dashboard. Ensure consistent colors and borders.</p>
+                        
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="bg-white border border-slate-200 p-4 rounded-lg shadow-sm">
+                                <h5 class="font-bold text-blue-700 text-sm mb-1">1. Patients by Diagnosis</h5>
+                                <p class="text-xs text-slate-600"><strong>Visual:</strong> Donut Chart or Pie Chart</p>
+                                <p class="text-xs text-slate-600"><strong>Config:</strong> Legend: Diagnosis, Values: Count of PatientID.</p>
+                            </div>
+                            
+                            <div class="bg-white border border-slate-200 p-4 rounded-lg shadow-sm">
+                                <h5 class="font-bold text-blue-700 text-sm mb-1">2. Cost vs. Diagnosis</h5>
+                                <p class="text-xs text-slate-600"><strong>Visual:</strong> Clustered Bar Chart</p>
+                                <p class="text-xs text-slate-600"><strong>Config:</strong> Y-axis: Diagnosis, X-axis: Average Treatment Cost.</p>
+                            </div>
+
+                            <div class="bg-white border border-slate-200 p-4 rounded-lg shadow-sm">
+                                <h5 class="font-bold text-blue-700 text-sm mb-1">3. Admissions Over Time</h5>
+                                <p class="text-xs text-slate-600"><strong>Visual:</strong> Line Chart</p>
+                                <p class="text-xs text-slate-600"><strong>Config:</strong> X-axis: Admission Date (Month/Year), Y-axis: Count of PatientID.</p>
+                            </div>
+
+                            <div class="bg-white border border-slate-200 p-4 rounded-lg shadow-sm">
+                                <h5 class="font-bold text-blue-700 text-sm mb-1">4. Patient Demographics (Age)</h5>
+                                <p class="text-xs text-slate-600"><strong>Visual:</strong> Column Chart</p>
+                                <p class="text-xs text-slate-600"><strong>Config:</strong> Create age bins (Groups) first. X-axis: Age Bins, Y-axis: Count of PatientID.</p>
+                            </div>
+
+                            <div class="bg-white border border-slate-200 p-4 rounded-lg shadow-sm">
+                                <h5 class="font-bold text-blue-700 text-sm mb-1">5. Gender Distribution</h5>
+                                <p class="text-xs text-slate-600"><strong>Visual:</strong> Treemap or 100% Stacked Bar</p>
+                                <p class="text-xs text-slate-600"><strong>Config:</strong> Category: Gender, Values: Count of PatientID.</p>
+                            </div>
+
+                            <div class="bg-white border border-slate-200 p-4 rounded-lg shadow-sm">
+                                <h5 class="font-bold text-blue-700 text-sm mb-1">6. Key Influencers (Bonus)</h5>
+                                <p class="text-xs text-slate-600"><strong>Visual:</strong> Key Influencers</p>
+                                <p class="text-xs text-slate-600"><strong>Config:</strong> Analyze: Length of Stay, Explain By: Diagnosis, Age, Gender. (Shows advanced L5 skills).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // --- NAVIGATION STATE ---
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+            // Show targeted tab
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).classList.add('block');
+
+            // Reset all sidebar buttons styling
+            document.querySelectorAll('.sidebar-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'shadow-md');
+                btn.classList.add('text-slate-600', 'hover:bg-slate-100', 'hover:text-blue-600');
+            });
+            
+            // Set active styling for selected button
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-md');
+            activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-100', 'hover:text-blue-600');
+
+            // Close mobile sidebar if open
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar.classList.contains('-translate-x-full')) {
+                toggleSidebar();
             }
-          };
-
-          return (
-            <div className="space-y-6 animate-in fade-in duration-500 p-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-blue-800 font-semibold flex items-center mb-2">
-                    <Lightbulb className="mr-2" size={18} /> Model Context
-                  </h3>
-                  <p className="text-sm text-blue-900">
-                    Assume a standard Star Schema. <strong>Sales</strong> is the Fact table and <strong>Products</strong> is the Dimension table. 
-                    There is a 1-to-Many relationship from Products[ProductID] to Sales[ProductID].
-                  </p>
-                </div>
-                <button 
-                  onClick={handleDownloadExcel}
-                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
-                >
-                  <Download size={16} />
-                  <span>Download Excel</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {Object.entries(schemaData).map(([tableName, data]) => (
-                  <div key={tableName} className="border border-gray-200 rounded-lg shadow-sm bg-white overflow-hidden">
-                    <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-                      <span className="font-bold text-gray-700 flex items-center">
-                        <TableProperties size={16} className="mr-2 text-gray-500" />
-                        {tableName} Table
-                      </span>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-50 text-gray-600">
-                          <tr>
-                            {Object.keys(data[0]).map(key => (
-                              <th key={key} className="px-4 py-2 border-b">{key}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {data.map((row, i) => (
-                            <tr key={i} className="border-b last:border-0 hover:bg-gray-50">
-                              {Object.values(row).map((val, j) => (
-                                <td key={j} className="px-4 py-2 text-gray-700">{val}</td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        };
-
-        const QuestionCard = ({ item }) => {
-          const [isOpen, setIsOpen] = useState(false);
-
-          return (
-            <div className="border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
-              <div className="p-5">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-lg font-bold text-gray-800">{item.title}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {item.tags.map(tag => (
-                      <span key={tag} className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full border border-gray-200">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                
-                <p className="text-gray-700 mb-4">{item.question}</p>
-                
-                <button 
-                  onClick={() => setIsOpen(!isOpen)}
-                  className="flex items-center space-x-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg"
-                >
-                  {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                  <span>{isOpen ? 'Hide Solution' : 'Show Solution'}</span>
-                </button>
-              </div>
-
-              {isOpen && (
-                <div className="bg-slate-900 border-t border-gray-200 animate-in slide-in-from-top-2 duration-200">
-                  <div className="p-5">
-                    <div className="flex items-center text-slate-300 text-sm font-semibold mb-2">
-                      <Code2 size={16} className="mr-2" /> DAX Code
-                    </div>
-                    <pre className="bg-slate-800 p-4 rounded-lg overflow-x-auto border border-slate-700">
-                      <code className="text-blue-300 font-mono text-sm leading-relaxed">
-                        {item.dax}
-                      </code>
-                    </pre>
-                    
-                    <div className="mt-4 bg-blue-900/30 border border-blue-800/50 rounded-lg p-4">
-                      <div className="flex items-start text-blue-100">
-                        <Lightbulb className="mr-2 mt-0.5 text-blue-400 shrink-0" size={18} />
-                        <div className="text-sm leading-relaxed w-full">
-                          <strong className="text-white block mb-2">How it works:</strong>
-                          {Array.isArray(item.explanation) ? (
-                            <ul className="list-disc list-outside ml-4 space-y-2">
-                              {item.explanation.map((line, idx) => (
-                                <li key={idx} dangerouslySetInnerHTML={{ __html: line }} />
-                              ))}
-                            </ul>
-                          ) : (
-                            <p>{item.explanation}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        };
-
-        const App = () => {
-          const [activeTab, setActiveTab] = useState('schema');
-
-          const filteredQuestions = questions.filter(q => {
-            if (activeTab === 'value') return q.category === 'Value';
-            if (activeTab === 'time') return q.category === 'Time';
-            return false;
-          });
-
-          return (
-            <div>
-              {/* Header */}
-              <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="flex items-center justify-between h-16">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-blue-600 p-2 rounded-lg text-white">
-                        <PlayCircle size={24} />
-                      </div>
-                      <h1 className="text-xl font-extrabold text-gray-900 tracking-tight">
-                        DAX Practice Hub
-                      </h1>
-                    </div>
-                    <div className="text-sm text-gray-500 hidden sm:block">
-                      Master Context, Filters, and Time Intelligence
-                    </div>
-                  </div>
-                  
-                  {/* Tabs */}
-                  <div className="flex space-x-2 overflow-x-auto">
-                    <TabButton 
-                      active={activeTab === 'schema'} 
-                      onClick={() => setActiveTab('schema')} 
-                      icon={Database} 
-                      text="Dataset & Schema" 
-                    />
-                    <TabButton 
-                      active={activeTab === 'value'} 
-                      onClick={() => setActiveTab('value')} 
-                      icon={TableProperties} 
-                      text="Filter & Value DAX" 
-                    />
-                    <TabButton 
-                      active={activeTab === 'time'} 
-                      onClick={() => setActiveTab('time')} 
-                      icon={CalendarClock} 
-                      text="Time Intelligence" 
-                    />
-                  </div>
-                </div>
-              </header>
-
-              {/* Main Content */}
-              <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {activeTab === 'schema' && (
-                  <div>
-                    <div className="mb-6">
-                      <h2 className="text-2xl font-bold text-gray-900">Understand the Data</h2>
-                      <p className="text-gray-600 mt-1">Review the sample tables below to understand the context of the practice questions.</p>
-                    </div>
-                    <SchemaViewer />
-                  </div>
-                )}
-
-                {(activeTab === 'value' || activeTab === 'time') && (
-                  <div className="space-y-6">
-                    <div className="mb-6">
-                      <h2 className="text-2xl font-bold text-gray-900">
-                        {activeTab === 'value' ? 'Filter & Value Functions' : 'Time Intelligence Functions'}
-                      </h2>
-                      <p className="text-gray-600 mt-1">
-                        Read the scenario, think about your DAX approach, and then reveal the solution to check your work.
-                      </p>
-                      
-                      {activeTab === 'time' && (
-                        <div className="mt-4 bg-amber-50 border border-amber-200 border-l-4 border-l-amber-500 p-4 rounded-lg flex items-start">
-                          <Info className="text-amber-500 mr-3 shrink-0 mt-0.5" size={20} />
-                          <p className="text-sm text-amber-800 leading-relaxed">
-                            <strong>Best Practice Note:</strong> The formulas below are intentionally written using <code>Sales[Date]</code> to directly match the <code>Sales</code> table schema provided in the dataset. However, in a real Power BI environment, Time Intelligence functions (like PREVIOUSMONTH, YTD, etc.) require a separate, continuous <strong>Calendar / Date table</strong> marked as a Date Table to guarantee mathematically accurate results.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="grid gap-6">
-                      {filteredQuestions.map(q => (
-                        <QuestionCard key={q.id} item={q} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </main>
-            </div>
-          );
         }
 
-        // Render the app
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // --- SIDEBAR TOGGLE ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const icon = document.getElementById('menu-icon');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                // Open
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                icon.setAttribute('data-lucide', 'x');
+            } else {
+                // Close
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+                icon.setAttribute('data-lucide', 'menu');
+            }
+            lucide.createIcons();
+        }
+
+        // --- DATA GENERATORS ---
+        function downloadCSV(filename, csvData) {
+            const blob = new Blob([csvData], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', filename);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function generateSalesData() {
+            const regions = ["North", "South", "East", "West"];
+            const firstNames = ["Rahul", "Priya", "Amit", "Neha", "Sanjay", "Kiran", "Vikram", "Sneha", "Raj", "Pooja", "Arun", "Divya"];
+            const lastNames = ["Sharma", "Singh", "Patel", "Gupta", "Verma", "Rao", "Kumar", "Iyer", "Desai", "Joshi"];
+            
+            let csv = "OrderID,Date,Region,Customer,ProductID,Sales,Profit\n";
+            const start = new Date(2024, 0, 1).getTime();
+            const end = new Date(2024, 11, 31).getTime();
+
+            for (let i = 1; i <= 500; i++) {
+                const id = `S${10000 + i}`;
+                const date = new Date(start + Math.random() * (end - start)).toISOString().split('T')[0];
+                const region = regions[Math.floor(Math.random() * regions.length)];
+                const customer = `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
+                const productId = `P${Math.floor(Math.random() * 15 + 1).toString().padStart(3, '0')}`;
+                const sales = Math.floor(Math.random() * 4950) + 50; 
+                const profit = Math.floor(Math.random() * (sales * 0.4 + 200)) - 200; 
+                csv += `${id},${date},${region},${customer},${productId},${sales},${profit}\n`;
+            }
+            downloadCSV("Sales.csv", csv);
+        }
+
+        function generateProductData() {
+            const categories = ["Electronics", "Furniture", "Stationery", "Technology", "Clothing", "Home Appliances"];
+            const adjectives = ["Wireless", "Ergonomic", "Smart", "Compact", "Heavy Duty", "Portable", "Advanced", "Premium"];
+            const nouns = ["Laptop", "Chair", "Smartphone", "Notebook", "Server", "Desk", "Headphones", "Monitor", "Printer"];
+            
+            let csv = "ProductID,ProductName,Category\n";
+            for (let i = 1; i <= 15; i++) {
+                const id = `P${i.toString().padStart(3, '0')}`;
+                const name = `${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`;
+                const category = categories[Math.floor(Math.random() * categories.length)];
+                csv += `${id},${name},${category}\n`;
+            }
+            downloadCSV("Product.csv", csv);
+        }
+
+        function generateHospitalData() {
+            const diagnoses = ["Cardiology", "Orthopedics", "Neurology", "General", "Pediatrics", "Oncology", "Dermatology"];
+            const genders = ["M", "F"];
+            
+            let csv = "PatientID,Admission Date,Discharge Date,Treatment Cost,Diagnosis,Age,Gender\n";
+            const start = new Date(2024, 0, 1).getTime();
+            const end = new Date(2024, 11, 1).getTime(); 
+
+            for (let i = 1; i <= 500; i++) {
+                const id = `PT${10000 + i}`;
+                const admissionTime = start + Math.random() * (end - start);
+                const admissionDate = new Date(admissionTime);
+                
+                const stayDays = Math.floor(Math.random() * 20) + 1;
+                const dischargeDate = new Date(admissionTime + stayDays * 24 * 60 * 60 * 1000);
+                
+                const admDateStr = admissionDate.toISOString().split('T')[0];
+                const disDateStr = dischargeDate.toISOString().split('T')[0];
+                
+                const cost = Math.floor(Math.random() * 195000) + 5000;
+                const diagnosis = diagnoses[Math.floor(Math.random() * diagnoses.length)];
+                const age = Math.floor(Math.random() * 85) + 1;
+                const gender = genders[Math.floor(Math.random() * genders.length)];
+
+                csv += `${id},${admDateStr},${disDateStr},${cost},${diagnosis},${age},${gender}\n`;
+            }
+            downloadCSV("Hospital_Patient_Data.csv", csv);
+        }
     </script>
 </body>
 </html>
